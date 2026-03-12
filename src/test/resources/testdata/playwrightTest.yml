@@ -1,0 +1,16 @@
+- testCaseId: "SWIGGY_NAV_01"
+  testDescription: "Verify Swiggy Landing Page"
+  events:
+    - eventType: "P_NAVIGATE"
+      description: "Navigate to Swiggy using Playwright"
+      additionalInfo:
+        url: "https://www.swiggy.com/"
+        title: "Order Food & Groceries. Discover the best restaurants. Swiggy it!"
+    - eventType: LOGIN
+    - eventType: CREATE LEAD
+    - eventType: UPDATE LEAD
+    - eventType: CREATE OFFER
+    - eventType: UPDATE OFFER
+    - eventType: KYC
+
+

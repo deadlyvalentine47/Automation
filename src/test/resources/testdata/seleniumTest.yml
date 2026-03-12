@@ -1,0 +1,8 @@
+- testCaseId: "SWIGGY_SEL_NAV_01"
+  testDescription: "Verify Swiggy Landing Page using Selenium"
+  events:
+    - eventType: "S_NAVIGATE"
+      description: "Navigate to Swiggy and check title"
+      additionalInfo:
+        url: "https://www.swiggy.com/"
+        title: "Order Food & Groceries. Discover the best restaurants. Swiggy it!"
