@@ -13,6 +13,12 @@ public class PlaywrightBase {
     @Value("${playwright.headless:true}")
     protected boolean isHeadless;
 
+    @Value("${playwright.viewport.width:1920}")
+    protected int viewportWidth;
+
+    @Value("${playwright.viewport.height:1080}")
+    protected int viewportHeight;
+
     protected Playwright playwright;
     protected Browser browser;
 
@@ -32,7 +38,7 @@ public class PlaywrightBase {
             // Now context will be resolved
             context = browser.newContext(new Browser.NewContextOptions()
                     .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
-//                    .setViewportSize(1920, 1080)
+                    .setViewportSize(viewportWidth, viewportHeight)
             );
 
             page = context.newPage();
