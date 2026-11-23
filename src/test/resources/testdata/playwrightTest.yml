@@ -6,11 +6,5 @@
       additionalInfo:
         url: "https://www.swiggy.com/"
         title: "Order Food & Groceries. Discover the best restaurants. Swiggy it!"
-    - eventType: LOGIN
-    - eventType: CREATE LEAD
-    - eventType: UPDATE LEAD
-    - eventType: CREATE OFFER
-    - eventType: UPDATE OFFER
-    - eventType: KYC
 
 
