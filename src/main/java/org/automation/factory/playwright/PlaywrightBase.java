@@ -1,11 +1,12 @@
 package org.automation.factory.playwright;
 
 import com.microsoft.playwright.*;
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+@Lazy
 @Data
 @Component
 public class PlaywrightBase {
@@ -27,7 +28,14 @@ public class PlaywrightBase {
 
     protected Page page;
 
-    @PostConstruct
+    /** Starts the browser on first use so API-only runs never launch one. */
+    public synchronized Page getPage() {
+        if (page == null) {
+            init();
+        }
+        return page;
+    }
+
     public void init() {
         if (playwright == null) {
             playwright = Playwright.create();

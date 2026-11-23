@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -31,4 +32,7 @@ public class TestEvent {
   private String operation;
   private String dbPrefix;
   private String collectionName;
+
+  private List<ApiValidation> validations;
+  private String saveAs;
 }

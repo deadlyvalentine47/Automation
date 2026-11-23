@@ -1,0 +1,216 @@
+- testCaseId: "API_HEALTH_01"
+  testDescription: "Health check endpoint is up"
+  expectedResult: "201"
+  events:
+    - eventType: API_REQUEST
+      description: "Ping the service"
+      operation: PING
+      responseCode: 201
+
+- testCaseId: "API_AUTH_01"
+  testDescription: "Authentication succeeds with valid admin credentials"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "Request an auth token"
+      operation: AUTH
+      payload:
+        username: admin
+        password: password123
+      responseCode: 200
+      saveAs: auth
+      validations:
+        - path: "$.token"
+          expected: "#present"
+
+- testCaseId: "API_AUTH_02"
+  testDescription: "Authentication is rejected for bad credentials"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "Request a token with a wrong password"
+      operation: AUTH
+      payload:
+        username: admin
+        password: definitely-wrong-password
+      responseCode: 200
+      validations:
+        - path: "$.reason"
+          expected: "Bad credentials"
+        - path: "$.token"
+          expected: "#absent"
+
+- testCaseId: "API_CREATE_01"
+  testDescription: "Create a booking with a valid payload"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "Create booking"
+      operation: CREATE
+      payload:
+        firstname: Jim
+        lastname: Brown
+        totalprice: 111
+        depositpaid: true
+        bookingdates:
+          checkin: "2026-01-01"
+          checkout: "2026-01-05"
+        additionalneeds: Breakfast
+      responseCode: 200
+      validations:
+        - path: "$.bookingid"
+          expected: "#present"
+        - path: "$.booking.firstname"
+          expected: "Jim"
+        - path: "$.booking.lastname"
+          expected: "Brown"
+        - path: "$.booking.totalprice"
+          expected: 111
+        - path: "$.booking.bookingdates.checkin"
+          expected: "2026-01-01"
+
+- testCaseId: "API_GET_01"
+  testDescription: "Fetch an existing booking by id"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "Get booking id 1"
+      operation: GET
+      additionalInfo:
+        id: 1
+      responseCode: 200
+      validations:
+        - path: "$.firstname"
+          expected: "#present"
+        - path: "$.bookingdates.checkin"
+          expected: "#present"
+
+- testCaseId: "API_GET_02"
+  testDescription: "Fetching a booking that does not exist returns 404"
+  expectedResult: "404"
+  events:
+    - eventType: API_REQUEST
+      description: "Get a booking id that cannot exist"
+      operation: GET
+      additionalInfo:
+        id: 999999999
+      responseCode: 404
+
+- testCaseId: "API_LIST_01"
+  testDescription: "List all bookings returns a non-empty collection"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "List bookings"
+      operation: LIST
+      responseCode: 200
+      validations:
+        - path: "$.length()"
+          expected: "#present"
+
+- testCaseId: "API_FILTER_01"
+  testDescription: "Filter bookings by firstname"
+  expectedResult: "200"
+  events:
+    - eventType: API_REQUEST
+      description: "Filter bookings"
+      operation: LIST
+      additionalInfo:
+        firstname: Sally
+      responseCode: 200
+      validations:
+        - path: "$.length()"
+          expected: "#present"
+
+- testCaseId: "API_UPDATE_02"
+  testDescription: "Updating a booking without an auth token is forbidden"
+  expectedResult: "403"
+  events:
+    - eventType: API_REQUEST
+      description: "Attempt update with no token"
+      operation: UPDATE
+      additionalInfo:
+        id: 1
+        cookie: "token=invalid-token"
+      payload:
+        firstname: Nope
+        lastname: Nope
+        totalprice: 1
+        depositpaid: false
+        bookingdates:
+          checkin: "2026-01-01"
+          checkout: "2026-01-02"
+      responseCode: 403
+
+- testCaseId: "API_LIFECYCLE_01"
+  testDescription: "Create, update, then delete a booking end to end"
+  expectedResult: "201"
+  events:
+    - eventType: API_REQUEST
+      description: "Authenticate"
+      operation: AUTH
+      payload:
+        username: admin
+        password: password123
+      responseCode: 200
+      saveAs: auth
+      validations:
+        - path: "$.token"
+          expected: "#present"
+
+    - eventType: API_REQUEST
+      description: "Create the booking"
+      operation: CREATE
+      payload:
+        firstname: Lifecycle
+        lastname: Tester
+        totalprice: 250
+        depositpaid: true
+        bookingdates:
+          checkin: "2026-03-01"
+          checkout: "2026-03-03"
+        additionalneeds: Late checkout
+      responseCode: 200
+      saveAs: created
+      validations:
+        - path: "$.bookingid"
+          expected: "#present"
+        - path: "$.booking.firstname"
+          expected: "Lifecycle"
+
+    - eventType: API_REQUEST
+      description: "Update the booking just created"
+      operation: UPDATE
+      additionalInfo:
+        id: "$.created.response.bookingid"
+        cookie: "$.auth.response.token"
+      payload:
+        firstname: Lifecycle
+        lastname: Updated
+        totalprice: 300
+        depositpaid: false
+        bookingdates:
+          checkin: "2026-03-01"
+          checkout: "2026-03-04"
+        additionalneeds: Lunch
+      responseCode: 200
+      validations:
+        - path: "$.lastname"
+          expected: "Updated"
+        - path: "$.totalprice"
+          expected: 300
+
+    - eventType: API_REQUEST
+      description: "Delete the booking"
+      operation: DELETE
+      additionalInfo:
+        id: "$.created.response.bookingid"
+        cookie: "$.auth.response.token"
+      responseCode: 201
+
+    - eventType: API_REQUEST
+      description: "Verify the booking is gone"
+      operation: GET
+      additionalInfo:
+        id: "$.created.response.bookingid"
+      responseCode: 404

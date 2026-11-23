@@ -1,16 +1,17 @@
 package org.automation.factory.selenium;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
+@Lazy
 @Data
 @Component
 public class SeleniumBase {
@@ -26,7 +27,14 @@ public class SeleniumBase {
 
     protected WebDriver driver;
 
-    @PostConstruct
+    /** Starts Chrome on first use so API-only runs never launch a browser. */
+    public synchronized WebDriver getDriver() {
+        if (driver == null) {
+            init();
+        }
+        return driver;
+    }
+
     public void init() {
         if (driver == null) {
             // 1. Manages the binary (Try clearing cache if still failing)
